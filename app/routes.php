@@ -1,5 +1,4 @@
 <?php
-include_once APP_DIR.'Controllers/MainController.php';
 
 $url = parse_url($_SERVER['REQUEST_URI']);
 $page = $url["path"];
@@ -8,6 +7,7 @@ switch ($page){
     case '/':
         (new \Controllers\MainController())->index();
         break;
+        //Ajax-запросы
     case '/add-comment':
         (new \Controllers\MainController())->addComment();
         break;
@@ -23,6 +23,7 @@ switch ($page){
     case '/click-rating':
         (new \Controllers\MainController())->clickRating();
         break;
+        // Авторизация и регистрация пользователей
     case '/login':
         (new \Controllers\AuthController())->login();
         break;
@@ -32,6 +33,7 @@ switch ($page){
     case '/registration':
         (new \Controllers\AuthController())->registration();
         break;
+
     default:
         echo '404';
         header("HTTP/1.0 404 Not Found");

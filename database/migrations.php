@@ -1,17 +1,20 @@
 <?php
 /* Подключение к БД */
 $db = new PDO("mysql:host=localhost;dbname=comments_db;charset=utf8", "homestead", "secret");
-/* Создание таблицы "users", если ее не существует*/
+/* Создание таблиц, если их не существует*/
 try
 {
-//  $db->query("DROP TABLE users");
+//  таблица Пользователей
     $db->query("CREATE TABLE IF NOT EXISTS users(
 	id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(255) NOT NULL,
 	email VARCHAR(255) NOT NULL UNIQUE,
 	password VARCHAR(255) NOT NULL
 	) CHARACTER SET utf8 COLLATE utf8_general_ci;");
-//  $db->query("DROP TABLE comments");
+
+    /*таблица Комментариев содержит
+    id пользователя написавшего комментарий и
+    id комментария для определения вложенности комментария*/
     $db->query("CREATE TABLE IF NOT EXISTS comments(
 	id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	text MEDIUMTEXT NOT NULL,
@@ -20,7 +23,9 @@ try
 	created_at DATETIME NOT NULL,
 	updated_at DATETIME
 	) CHARACTER SET utf8 COLLATE utf8_general_ci;");
-//  $db->query("DROP TABLE appraisals");
+
+    /*таблица Оценок для связи комментария с 
+    пользователем оценившем его*/
     $db->query("CREATE TABLE IF NOT EXISTS appraisals(
 	user_id INT(10) UNSIGNED NOT NULL,
 	comment_id INT(10) UNSIGNED NOT NULL,

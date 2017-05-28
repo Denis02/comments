@@ -17,7 +17,7 @@ spl_autoload_register(function (string $class){
     }
 });
 
-// Вывод страницы
+// Глобальная функция для вывода страницы
 function view(string $content, array $data = null, string $layout='app'){
     ob_start();
     include_once RESOURCES_DIR.'views/contents/'.$content.'.php';
@@ -27,8 +27,10 @@ function view(string $content, array $data = null, string $layout='app'){
 
 // Подключение файла маршрутизации
 require_once ROOT_DIR.'app/routes.php';
+
+// Запуск миграций базы данных
 //include_once ROOT_DIR.'database/migrations.php';
-?>
+
 
 
 

@@ -1,3 +1,4 @@
+<!--Проверка авторизирован ли пользователь-->
 <?php
     if(isset($_SESSION['user']))
         $auth_user = unserialize($_SESSION['user']);
@@ -6,6 +7,7 @@
 
 <div class="container">
 
+<!--Отобразить форму создания комментария для авторизированного пользователя-->
     <?php if(isset($auth_user)): ?>
         <form method="POST">
             <div class="form-group">
@@ -16,6 +18,7 @@
                 <br>
             </div>
         </form>
+<!--Отобразить ссылки на страницы авторизации и регистрации для не авторизированного пользователя-->
     <?php else: ?>
         <div class="alert alert-warning">
             Щоб <b>залишити коментар</b> потрібно
@@ -24,12 +27,12 @@
         </div>
     <?php endif; ?>
 
+<!--Вывод десяти последних комментариев-->
     <div id="comments">
         <?php if( isset($data['comments']))
         foreach ($data['comments'] as $comment): ?>
-    <hr>
+<!--Комментарий содержит: имя пользователя, дату и время создания, текст, функциональные кнопки (описаны ниже) и ответы на комментарий (вложенные комментарии)-->
         <div class="row bg-info">
-            <div class="col-sm-8">
                 <div class="panel panel-white post panel-shadow">
                     <div class="post-heading">
                         <div class="pull-left image">
@@ -44,28 +47,33 @@
                     </div>
                     <div class="post-description">
                         <p><?=$comment->text?></p>
-
+<!--Если комментарий написан авторизированным пользователем отобразить:-->
                         <?php if(isset($auth_user) && $comment->isMy($auth_user)): ?>
+<!--форма для редактирования комментария -->
                             <div class="form-group" style="display:none">
-                                <label for="comment">Радагувати коментар:</label>
+                                <label for="comment">Редагувати коментар:</label>
                                 <textarea name="text" class="form-control" rows="5" id="comment"><?=$comment->text?></textarea>
                                 <button  class="btn btn-primary btn-block" onclick="editComment(this,<?=$comment->id?>)">Відправити</button>
                                 <br>
                             </div>
                             <div class="stats">
+<!--неактивные кнотки оценок комментария-->
                                 <span class="btn btn-default stat-item disabled">
                                     <i class="glyphicon glyphicon-thumbs-up"></i> <?= count($comment->rating['plus']) ?>
                                 </span>
                                 <span class="btn btn-default stat-item disabled">
                                     <i class="glyphicon glyphicon-thumbs-down"></i> <?= count($comment->rating['minus']) ?>
                                 </span>
+<!--кнопки для отображения формы редактирования комментария и удаления комментария-->
                                 <div class="btn-group pull-right">
                                     <button class="btn btn-primary" onclick="showEdit(this)">Редагувати</button>
                                     <button class="btn btn-danger" onclick="deleteComment(this,<?=$comment->id?>)">Видалити</button>
                                 </div>
                             </div>
+<!--Если комментарий написан другим пользователем отобразить:-->
                         <?php else: ?>
                             <div class="stats">
+<!--кнопки для оценки комментария (если авторизированный пользователь уже поставил оценку данному комментарию то пометить соответсвующую кнопку)-->
                                 <span class="btn stat-item
                                       <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment->rating['plus']))
                                           echo 'btn-success'; else echo 'btn-default';?> "
@@ -74,10 +82,11 @@
                                 </span>
                                 <span class="btn stat-item
                                       <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment->rating['minus']))
-                                    echo 'btn-danger'; else echo 'btn-default';?> "
+                                         echo 'btn-danger'; else echo 'btn-default';?> "
                                       onclick="clickRating(this, <?=$comment->id?>, false)">
                                     <i class="glyphicon glyphicon-thumbs-down"></i> <span><?= count($comment->rating['minus']) ?></span>
                                 </span>
+<!--кнопка для отображения формы написания ответа на комментарий (вложенного комментария)-->
                                 <?php if(isset($auth_user)): ?>
                                 <button class="btn btn-primary pull-right" onclick="showAddAnswer(this)">Відповісти</button>
                                 <?php endif; ?>
@@ -86,19 +95,20 @@
 
                     </div>
                 </div>
+<!--форма для написания ответа на комментарий -->
                 <div class="form-group" style="display:none">
                     <label for="comment">Відповісти на коментар:</label>
                     <textarea name="text" class="form-control" rows="5" id="comment"></textarea>
                     <button  class="btn btn-primary btn-block" onclick="addAnswer(this,<?=$comment->id?>)">Відправити</button>
                     <br>
                 </div>
-
+<!--Вывод двух последних ответов на комментарий-->
                 <div class="answers">
                     <?php if( isset($comment->comments) && count($comment->comments)>0)
                     echo '<p>Відповіді:</p>';
                     foreach ($comment->comments as $comment2): ?>
+<!--Вложенные комментарии содержат аналогичный контент, но не имеют своих вложенных комментариев-->
                     <div class="row">
-                        <div class="col-sm-8">
                             <div class="panel panel-white post panel-shadow">
                                 <div class="post-heading">
                                     <div class="pull-left image">
@@ -133,18 +143,19 @@
                                                 <button class="btn btn-danger" onclick="deleteComment(this,<?=$comment2->id?>)">Видалити</button>
                                             </div>
                                         </div>
+
                                     <?php else: ?>
                                         <div class="stats">
                                             <span class="btn stat-item
                                                   <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment2->rating['plus']))
-                                                echo 'btn-success'; else echo 'btn-default';?> "
-                                                  onclick="clickRating(this, <?=$comment2->id?>, true)">
+                                                    echo 'btn-success'; else echo 'btn-default';?> "
+                                                    onclick="clickRating(this, <?=$comment2->id?>, true)">
                                                 <i class="glyphicon glyphicon-thumbs-up"></i> <span><?= count($comment2->rating['plus']) ?></span>
                                             </span>
-                                                        <span class="btn stat-item
+                                            <span class="btn stat-item
                                                   <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment2->rating['minus']))
-                                                            echo 'btn-danger'; else echo 'btn-default';?> "
-                                                              onclick="clickRating(this, <?=$comment2->id?>, false)">
+                                                    echo 'btn-danger'; else echo 'btn-default';?> "
+                                                    onclick="clickRating(this, <?=$comment2->id?>, false)">
                                                 <i class="glyphicon glyphicon-thumbs-down"></i> <span><?= count($comment2->rating['minus']) ?></span>
                                             </span>
                                         </div>
@@ -153,19 +164,20 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                     <?php endforeach; ?>
+<!--Кнопка для отображения всех ответов на комментарий-->
                     <?php if($comment->comments_count >2): ?>
                     <button class="btn btn-primary btn-block" onclick="showAllAnswers(this,<?=$comment->id?>,<?=$comment->comments_count?>)">Всі відповіді</button>
                     <?php endif; ?>
                 </div>
-            </div>
         </div>
-    <hr>
+
         <?php endforeach; ?>
     </div>
 </div>
 
+
+<!--Скрипты Ajax-запросов и отображения форм-->
 <script type="text/javascript">
     $(document).ready(function(){
 
@@ -221,14 +233,6 @@
                 });
             }
         });
-
-
-
-
-
-
-
-
     });
 
 //Отображение формы для изменения комментария
@@ -244,7 +248,7 @@
             text.prev('p').css('display', 'block');
         }
     }
-//Изменение комментария
+//Ajax-запрос на Изменение комментария
     function editComment(el, id){
         var newText=jQuery(el).prev('textarea').val();
         $.ajax({
@@ -263,7 +267,7 @@
             }
         });
     }
-//Удаление комментария
+//Ajax-запрос на Удаление комментария
     function deleteComment(el, id){
         var newText=jQuery(el).prev('textarea').val();
         $.ajax({
@@ -290,7 +294,6 @@
                 var data = jQuery.parseJSON(res);
                 if (data) {
                     $.each(data, function(index, data){
-                        /* Отбираем блок с комментариями и дозаполняем его новыми данными */
                         jQuery(el).parent().append(
                             '<div class="panel panel-white post panel-shadow">'+
                             '<div class="post-heading">'+
@@ -326,14 +329,12 @@
         var text = jQuery(el).closest('.post').next('div');
         if(text.css('display') == 'none') {
             text.css('display', 'block');
-//            text.prev('p').css('display', 'none');
         }
         else {
             text.css('display', 'none');
-//            text.prev('p').css('display', 'block');
         }
     }
-//Добавление нового ответа к комментарию
+///Ajax-запрос на Добавление нового ответа к комментарию
     function addAnswer(el, id) {
         var text=jQuery(el).prev('textarea').val();
         console.log([id,text]);
@@ -372,14 +373,13 @@
             }
         });
     }
-
+//Ajax-запрос на Оценивание комментария
     function clickRating(el, id, val){
         $.ajax({
             url: '/click-rating',
             type: 'POST',
             data: {commentId: id, value: val},
             success: function (res) {
-                    console.log(res);
                 if(res == true) {
                     jQuery(el).children('span').text(parseInt(jQuery(el).text()) + 1);
                     if(val) jQuery(el).addClass('btn-success');
@@ -392,5 +392,11 @@
         });
     }
 
+
+// Не успел написать код для нормального отображения подгружаемых комментариев
+    function newCommentElement() {
+        var el = document.createElement('div');
+        el.addClass('row');
+    }
 
 </script>

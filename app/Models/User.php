@@ -29,13 +29,9 @@ class User
         }
     }
 
-    /**
-     * @return int|null
-     */
     public function getId()
     {
         return $this->id;
     }
-
 
 }
