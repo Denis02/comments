@@ -9,13 +9,15 @@ use Models\User;
 class MainController
 {
 
-    public function index(){
-//POST запросы
+    public function index()
+    {
+    //POST запросы
         //Создание нового комментария
         if(isset($_POST['text']) && isset($_SESSION['user'])) {
             if ($user_id = unserialize($_SESSION['user'])->getId()) {
                 (new DbHelper())->insertComment(new Comment(['text'=>$_POST['text'], 'user_id'=>$user_id]), $_SESSION['comment_id']??0);
             }
+            return header('Location: /');
         }
         //Ajax-подгрузка комментариев при прокрутке страницы
         elseif(isset($_POST['startFrom'])){
@@ -23,10 +25,27 @@ class MainController
             exit();
         }
 
-//Вывод списка комментариев
+        //Вывод списка комментариев
         return view ('comments',[
             'comments'=>(new DbHelper())->getComments(null,null,10)
         ]);
+    }
+
+    public function addComment()
+    {
+        if(empty($_POST) || !isset($_SESSION['user']))
+            return header('Location: /');
+
+        if(isset($_POST['commentText'])){
+            if ($user_id = unserialize($_SESSION['user'])->getId()) {
+                if($id = (new DbHelper())->insertComment(new Comment(['text'=>$_POST['commentText'], 'user_id'=>$user_id]), $_POST['commentId'] ?? 0)){
+                    echo json_encode((new DbHelper())->getCommentById($id));
+                    exit();
+                }
+            }
+        }
+        header("HTTP/1.0 400 Bad Request");
+        exit();
     }
 
     public function editComment()
@@ -67,23 +86,6 @@ class MainController
         if(isset($_POST['commentId']) && isset($_POST['commentCount'])){
             echo json_encode((new DbHelper())->getComments(null, $_POST['commentId'], $_POST['commentCount'], 2));
             exit();
-        }
-        header("HTTP/1.0 400 Bad Request");
-        exit();
-    }
-
-    public function addAnswer()
-    {
-        if(empty($_POST) || !isset($_SESSION['user']))
-            return header('Location: /');
-
-        if(isset($_POST['commentId']) && isset($_POST['commentText'])){
-            if ($user_id = unserialize($_SESSION['user'])->getId()) {
-                if($id = (new DbHelper())->insertComment(new Comment(['text'=>$_POST['commentText'], 'user_id'=>$user_id]), (int)$_POST['commentId'])){
-                    echo json_encode((new DbHelper())->getCommentById($id));
-                    exit();
-                }
-            }
         }
         header("HTTP/1.0 400 Bad Request");
         exit();

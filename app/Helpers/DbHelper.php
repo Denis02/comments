@@ -153,9 +153,9 @@ class DbHelper
     ////DELETE запросы
 
     public function deleteComment(int $id){
+        $this->db->query("DELETE FROM comments WHERE comment_id = $id");
+        $this->db->query("DELETE FROM appraisals WHERE comment_id = $id");
         if($this->db->query("DELETE FROM comments WHERE id = $id")){
-            $this->db->query("DELETE FROM comments WHERE comment_id = $id");
-            $this->db->query("DELETE FROM appraisals WHERE comment_id = $id");
             return true;
         }
         return false;

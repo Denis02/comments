@@ -8,6 +8,9 @@ switch ($page){
     case '/':
         (new \Controllers\MainController())->index();
         break;
+    case '/add-comment':
+        (new \Controllers\MainController())->addComment();
+        break;
     case '/edit-comment':
         (new \Controllers\MainController())->editComment();
         break;
@@ -16,9 +19,6 @@ switch ($page){
         break;
     case '/show-answers':
         (new \Controllers\MainController())->showAllAnswers();
-        break;
-    case '/add-answer':
-        (new \Controllers\MainController())->addAnswer();
         break;
     case '/click-rating':
         (new \Controllers\MainController())->clickRating();

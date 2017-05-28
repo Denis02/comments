@@ -338,7 +338,7 @@
         var text=jQuery(el).prev('textarea').val();
         console.log([id,text]);
         $.ajax({
-            url: '/add-answer',
+            url: '/add-comment',
             type: 'POST',
             data: {commentId: id, commentText: text},
             success: function (res) {
@@ -380,8 +380,11 @@
             data: {commentId: id, value: val},
             success: function (res) {
                     console.log(res);
-                if(res == true)
-                    jQuery(el).children('span').text(parseInt(jQuery(el).text())+1);
+                if(res == true) {
+                    jQuery(el).children('span').text(parseInt(jQuery(el).text()) + 1);
+                    if(val) jQuery(el).addClass('btn-success');
+                    else jQuery(el).addClass('btn-danger');
+                }
             },
             error: function (msg) {
                 console.log(msg);
