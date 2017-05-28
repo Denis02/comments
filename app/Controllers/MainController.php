@@ -61,7 +61,7 @@ class MainController
 
 //Ajax-подгрузка ответов к комментарию
     public function showAllAnswers(){
-        if(empty($_POST) || !isset($_SESSION['user']))
+        if(empty($_POST))
             return header('Location: /');
 
         if(isset($_POST['commentId']) && isset($_POST['commentCount'])){
@@ -72,7 +72,7 @@ class MainController
         exit();
     }
 
-    public function AddAnswer()
+    public function addAnswer()
     {
         if(empty($_POST) || !isset($_SESSION['user']))
             return header('Location: /');
@@ -87,6 +87,24 @@ class MainController
         }
         header("HTTP/1.0 400 Bad Request");
         exit();
+    }
+
+    public function clickRating()
+    {
+        if(empty($_POST) || !isset($_SESSION['user']))
+            return header('Location: /');
+
+        if(isset($_POST['commentId']) && isset($_POST['value'])){
+            if ($user_id = unserialize($_SESSION['user'])->getId()) {
+                if($id = (new DbHelper())->insertAppraisal((int)$_POST['commentId'], $user_id, $_POST['value'])){
+                    echo true;
+                    exit();
+                }
+            }
+        }
+        header("HTTP/1.0 400 Bad Request");
+        exit();
+
     }
 
 }

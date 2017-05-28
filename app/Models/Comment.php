@@ -19,7 +19,11 @@ class Comment
         $created_at,
         $user,
         $comments,
-        $comments_count;
+        $comments_count,
+        $rating = [
+            'plus'=>[],
+            'minus'=>[]
+        ];
 
 
     public function __construct(array $data=[])
@@ -36,6 +40,7 @@ class Comment
             if(isset($data['id'])) {
                 $this->comments = $db->getComments(null, $data['id'], 2);
                 $this->comments_count = $db->getCountComments(null, $data['id']);
+                $this->rating = $db->getRatingComment($data['id']);
             }
         }
     }

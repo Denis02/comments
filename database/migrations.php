@@ -26,7 +26,8 @@ try
 	comment_id INT(10) UNSIGNED NOT NULL,
 	value BOOLEAN NOT NULL DEFAULT 0,
 	FOREIGN KEY (user_id) REFERENCES users(id),
-	FOREIGN KEY (comment_id) REFERENCES comments(id)
+	FOREIGN KEY (comment_id) REFERENCES comments(id),
+	UNIQUE (user_id,comment_id)
 	) CHARACTER SET utf8 COLLATE utf8_general_ci;");
 }
 catch(PDOException $e)

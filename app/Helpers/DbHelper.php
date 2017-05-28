@@ -23,7 +23,7 @@ class DbHelper
     }
 
 
-    ////SELECT запросы
+////SELECT запросы
 
     public function loginUser($email, $password)
     {
@@ -51,10 +51,10 @@ class DbHelper
 
     public function getComments(int $user_id=null, int $comment_id=null, int $count=15, int $start=0, string $sort='created_at')
     {
-// получение количества записей в таблице
+        // получение количества записей в таблице
         $rows = $this->getCountComments($user_id,$comment_id);
-// получение записей из таблицы
         $comments = [];
+        // получение записей из таблицы
         if($rows > 0) {
             if ($user_id) {
                 $items = $this->db->query("SELECT * FROM comments WHERE (user_id=$user_id) ORDER BY $sort DESC  LIMIT $start, $count")->fetchAll();
@@ -81,9 +81,23 @@ class DbHelper
         return $rows;
     }
 
+    public function getRatingComment(int $comment_id=0){
+        $rating = [
+            'plus'=>[],
+            'minus'=>[]
+        ];
+        $items = $this->db->query("SELECT * FROM appraisals WHERE (comment_id=$comment_id)")->fetchAll();
+        foreach ($items as $item) {
+            if ($item['value'])
+                $rating['plus'][] = $item['user_id'];
+            else
+                $rating['minus'][] = $item['user_id'];
+        }
+        return $rating;
+    }
 
 
-    ////INSERT запросы
+////INSERT запросы
 
     public function registerUser($email, $password, $name)
     {
@@ -111,9 +125,16 @@ class DbHelper
         return false;
     }
 
+    public function insertAppraisal(int $comment_id, int $user_id, $value)
+    {
+        if($this->db->query("INSERT INTO appraisals (comment_id,user_id,value) VALUES ($comment_id,$user_id,$value)")){
+            return true;
+        }
+        return false;
+    }
 
-    ////UPDATE запросы
 
+////UPDATE запросы
 
     public function updateComment(Comment $comment){
         if(empty($comment->id) || empty($comment->text))

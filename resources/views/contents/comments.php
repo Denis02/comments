@@ -1,7 +1,12 @@
+<?php
+    if(isset($_SESSION['user']))
+        $auth_user = unserialize($_SESSION['user']);
+?>
+
 
 <div class="container">
 
-    <?php if(isset($_SESSION['user'])): ?>
+    <?php if(isset($auth_user)): ?>
         <form method="POST">
             <div class="form-group">
                 <label for="comment">Залишити коментар:</label>
@@ -40,7 +45,7 @@
                     <div class="post-description">
                         <p><?=$comment->text?></p>
 
-                        <?php if(isset($_SESSION['user']) && $comment->isMy(unserialize($_SESSION['user']))): ?>
+                        <?php if(isset($auth_user) && $comment->isMy($auth_user)): ?>
                             <div class="form-group" style="display:none">
                                 <label for="comment">Радагувати коментар:</label>
                                 <textarea name="text" class="form-control" rows="5" id="comment"><?=$comment->text?></textarea>
@@ -49,10 +54,10 @@
                             </div>
                             <div class="stats">
                                 <span class="btn btn-default stat-item disabled">
-                                    <i class="glyphicon glyphicon-thumbs-up"></i> 2
+                                    <i class="glyphicon glyphicon-thumbs-up"></i> <?= count($comment->rating['plus']) ?>
                                 </span>
                                 <span class="btn btn-default stat-item disabled">
-                                    <i class="glyphicon glyphicon-thumbs-down"></i> 12
+                                    <i class="glyphicon glyphicon-thumbs-down"></i> <?= count($comment->rating['minus']) ?>
                                 </span>
                                 <div class="btn-group pull-right">
                                     <button class="btn btn-primary" onclick="showEdit(this)">Редагувати</button>
@@ -61,13 +66,19 @@
                             </div>
                         <?php else: ?>
                             <div class="stats">
-                                <a href="#" class="btn btn-default stat-item">
-                                    <i class="glyphicon glyphicon-thumbs-up"></i> 2
-                                </a>
-                                <a href="#" class="btn btn-default stat-item">
-                                    <i class="glyphicon glyphicon-thumbs-down"></i> 12
-                                </a>
-                                <?php if(isset($_SESSION['user'])): ?>
+                                <span class="btn stat-item
+                                      <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment->rating['plus']))
+                                          echo 'btn-success'; else echo 'btn-default';?> "
+                                      onclick="clickRating(this, <?=$comment->id?>, true)">
+                                    <i class="glyphicon glyphicon-thumbs-up"></i> <span><?= count($comment->rating['plus']) ?></span>
+                                </span>
+                                <span class="btn stat-item
+                                      <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment->rating['minus']))
+                                    echo 'btn-danger'; else echo 'btn-default';?> "
+                                      onclick="clickRating(this, <?=$comment->id?>, false)">
+                                    <i class="glyphicon glyphicon-thumbs-down"></i> <span><?= count($comment->rating['minus']) ?></span>
+                                </span>
+                                <?php if(isset($auth_user)): ?>
                                 <button class="btn btn-primary pull-right" onclick="showAddAnswer(this)">Відповісти</button>
                                 <?php endif; ?>
                             </div>
@@ -103,7 +114,7 @@
                                 <div class="post-description">
                                     <p><?=$comment2->text?></p>
 
-                                    <?php if(isset($_SESSION['user']) && $comment2->isMy(unserialize($_SESSION['user']))): ?>
+                                    <?php if(isset($auth_user) && $comment2->isMy($auth_user)): ?>
                                         <div class="form-group" style="display:none">
                                             <label for="comment">Радагувати коментар:</label>
                                             <textarea name="text" class="form-control" rows="5" id="comment"><?=$comment2->text?></textarea>
@@ -112,10 +123,10 @@
                                         </div>
                                         <div class="stats">
                                             <span class="btn btn-default stat-item disabled">
-                                                <i class="glyphicon glyphicon-thumbs-up"></i> 2
+                                                <i class="glyphicon glyphicon-thumbs-up"></i> <?= count($comment2->rating['plus']) ?>
                                             </span>
                                             <span class="btn btn-default stat-item disabled">
-                                                <i class="glyphicon glyphicon-thumbs-down"></i> 12
+                                                <i class="glyphicon glyphicon-thumbs-down"></i> <?= count($comment2->rating['minus']) ?>
                                             </span>
                                             <div class="btn-group pull-right">
                                                 <button class="btn btn-primary" onclick="showEdit(this)">Редагувати</button>
@@ -124,12 +135,18 @@
                                         </div>
                                     <?php else: ?>
                                         <div class="stats">
-                                            <a href="#" class="btn btn-default stat-item">
-                                                <i class="glyphicon glyphicon-thumbs-up"></i> 2
-                                            </a>
-                                            <a href="#" class="btn btn-default stat-item">
-                                                <i class="glyphicon glyphicon-thumbs-down"></i> 12
-                                            </a>
+                                            <span class="btn stat-item
+                                                  <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment2->rating['plus']))
+                                                echo 'btn-success'; else echo 'btn-default';?> "
+                                                  onclick="clickRating(this, <?=$comment2->id?>, true)">
+                                                <i class="glyphicon glyphicon-thumbs-up"></i> <span><?= count($comment2->rating['plus']) ?></span>
+                                            </span>
+                                                        <span class="btn stat-item
+                                                  <?php if(isset($auth_user) && in_array($auth_user->getId(),$comment2->rating['minus']))
+                                                            echo 'btn-danger'; else echo 'btn-default';?> "
+                                                              onclick="clickRating(this, <?=$comment2->id?>, false)">
+                                                <i class="glyphicon glyphicon-thumbs-down"></i> <span><?= count($comment2->rating['minus']) ?></span>
+                                            </span>
                                         </div>
                                     <?php endif; ?>
 
@@ -189,10 +206,10 @@
                                 '<div class="post-description">'+
                                 '<p>'+data.text+'</p>'+
                                 '<div class="stats">'+
-                                '<a href="#" class="btn btn-default stat-item">'+
-                                '<i class="glyphicon glyphicon-thumbs-up"></i></a>'+
-                                '<a href="#" class="btn btn-default stat-item">'+
-                                '<i class="glyphicon glyphicon-thumbs-down"></i></a>'+
+                                '<span class="btn btn-default stat-item">'+
+                                '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
+                                '<span class="btn btn-default stat-item">'+
+                                '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
                                 '</div></div></div>'
                             );
                         });
@@ -273,7 +290,7 @@
                 var data = jQuery.parseJSON(res);
                 if (data) {
                     $.each(data, function(index, data){
-                        /* Отбираем по идентификатору блок с комментариями и дозаполняем его новыми данными */
+                        /* Отбираем блок с комментариями и дозаполняем его новыми данными */
                         jQuery(el).parent().append(
                             '<div class="panel panel-white post panel-shadow">'+
                             '<div class="post-heading">'+
@@ -288,10 +305,10 @@
                             '<div class="post-description">'+
                             '<p>'+data.text+'</p>'+
                             '<div class="stats">'+
-                            '<a href="#" class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-up"></i></a>'+
-                            '<a href="#" class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-down"></i></a>'+
+                            '<span class="btn btn-default stat-item">'+
+                            '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
+                            '<span class="btn btn-default stat-item">'+
+                            '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
                             '</div></div></div>'
                         );
                     });
@@ -341,10 +358,10 @@
                             '<div class="post-description">'+
                             '<p>'+data.text+'</p>'+
                             '<div class="stats">'+
-                            '<a href="#" class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-up"></i></a>'+
-                            '<a href="#" class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-down"></i></a>'+
+                            '<span class="btn btn-default stat-item">'+
+                            '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
+                            '<span class="btn btn-default stat-item">'+
+                            '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
                             '</div></div></div>'
                         );
                     jQuery(el).parent().css('display', 'none');
@@ -355,5 +372,22 @@
             }
         });
     }
+
+    function clickRating(el, id, val){
+        $.ajax({
+            url: '/click-rating',
+            type: 'POST',
+            data: {commentId: id, value: val},
+            success: function (res) {
+                    console.log(res);
+                if(res == true)
+                    jQuery(el).children('span').text(parseInt(jQuery(el).text())+1);
+            },
+            error: function (msg) {
+                console.log(msg);
+            }
+        });
+    }
+
 
 </script>

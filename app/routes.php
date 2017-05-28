@@ -18,7 +18,10 @@ switch ($page){
         (new \Controllers\MainController())->showAllAnswers();
         break;
     case '/add-answer':
-        (new \Controllers\MainController())->AddAnswer();
+        (new \Controllers\MainController())->addAnswer();
+        break;
+    case '/click-rating':
+        (new \Controllers\MainController())->clickRating();
         break;
     case '/login':
         (new \Controllers\AuthController())->login();
