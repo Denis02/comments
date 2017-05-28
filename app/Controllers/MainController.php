@@ -31,7 +31,7 @@ class MainController
 
     public function editComment()
     {
-        if(empty($_POST))
+        if(empty($_POST) || !isset($_SESSION['user']))
             return header('Location: /');
 
         if(isset($_POST['newText']) && isset($_POST['commentId'])){
@@ -46,7 +46,7 @@ class MainController
 
     public function deleteComment()
     {
-        if(empty($_POST))
+        if(empty($_POST) || !isset($_SESSION['user']))
             return header('Location: /');
 
         if(isset($_POST['commentId'])){
@@ -61,7 +61,7 @@ class MainController
 
 //Ajax-подгрузка ответов к комментарию
     public function showAllAnswers(){
-        if(empty($_POST))
+        if(empty($_POST) || !isset($_SESSION['user']))
             return header('Location: /');
 
         if(isset($_POST['commentId']) && isset($_POST['commentCount'])){
@@ -74,13 +74,15 @@ class MainController
 
     public function AddAnswer()
     {
-        if(empty($_POST))
+        if(empty($_POST) || !isset($_SESSION['user']))
             return header('Location: /');
 
-        if(isset($_POST['commentId']) && isset($_POST['commenText'])){
+        if(isset($_POST['commentId']) && isset($_POST['commentText'])){
             if ($user_id = unserialize($_SESSION['user'])->getId()) {
-                echo json_encode((new DbHelper())->insertComment(new Comment(['text'=>$_POST['commenText'], 'user_id'=>$user_id]), $_SESSION['commentId']));
-                exit();
+                if($id = (new DbHelper())->insertComment(new Comment(['text'=>$_POST['commentText'], 'user_id'=>$user_id]), (int)$_POST['commentId'])){
+                    echo json_encode((new DbHelper())->getCommentById($id));
+                    exit();
+                }
             }
         }
         header("HTTP/1.0 400 Bad Request");

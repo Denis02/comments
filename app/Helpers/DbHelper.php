@@ -42,6 +42,13 @@ class DbHelper
         return false;
     }
 
+    public function getCommentById($id){
+        if($user = $this->db->query("SELECT * FROM comments WHERE id=$id LIMIT 1")->fetch()){
+            return new Comment($user);
+        }
+        return false;
+    }
+
     public function getComments(int $user_id=null, int $comment_id=null, int $count=15, int $start=0, string $sort='created_at')
     {
 // получение количества записей в таблице
@@ -92,14 +99,14 @@ class DbHelper
         if(empty($comment->user->getId()) || empty($comment->text))
             return false;
         $created_at = date('Y-m-d H:i:s');
-        if($this->db->query("INSERT INTO comments 
+        if($res=$this->db->query("INSERT INTO comments 
                   (text,user_id,comment_id,created_at) VALUES (
                   '{$comment->text}',
                   '{$comment->user->getId()}',
                   '$comment_id',
                   '$created_at'
                   )")){
-            return true;
+            return $this->db->lastInsertId();
         }
         return false;
     }

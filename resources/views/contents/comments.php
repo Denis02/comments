@@ -103,7 +103,7 @@
                                 <div class="post-description">
                                     <p><?=$comment2->text?></p>
 
-                                    <?php if(isset($_SESSION['user']) && $comment->isMy(unserialize($_SESSION['user']))): ?>
+                                    <?php if(isset($_SESSION['user']) && $comment2->isMy(unserialize($_SESSION['user']))): ?>
                                         <div class="form-group" style="display:none">
                                             <label for="comment">Радагувати коментар:</label>
                                             <textarea name="text" class="form-control" rows="5" id="comment"><?=$comment2->text?></textarea>
@@ -319,10 +319,11 @@
 //Добавление нового ответа к комментарию
     function addAnswer(el, id) {
         var text=jQuery(el).prev('textarea').val();
+        console.log([id,text]);
         $.ajax({
             url: '/add-answer',
             type: 'POST',
-            data: {commentId: id, commenText: text},
+            data: {commentId: id, commentText: text},
             success: function (res) {
                 var data = jQuery.parseJSON(res);
                 if (data) {
@@ -346,6 +347,7 @@
                             '<i class="glyphicon glyphicon-thumbs-down"></i></a>'+
                             '</div></div></div>'
                         );
+                    jQuery(el).parent().css('display', 'none');
                 }
             },
             error: function (msg) {
