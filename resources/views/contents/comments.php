@@ -21,7 +21,7 @@
 <!--Отобразить ссылки на страницы авторизации и регистрации для не авторизированного пользователя-->
     <?php else: ?>
         <div class="alert alert-warning">
-            Щоб <b>залишити коментар</b> потрібно
+            Щоб <b>залишити або оцінити коментар</b> потрібно
             <b><a href="/login">авторизуватися</a></b> або
             <b><a href="/registration">зареєструватися</a></b> на сайті!
         </div>
@@ -179,8 +179,15 @@
 
 <!--Скрипты Ajax-запросов и отображения форм-->
 <script type="text/javascript">
-    $(document).ready(function(){
 
+/* Проверка авторизирован ли пользователь */
+    var auth_user;
+    <?php if(isset($auth_user)): ?>
+    auth_user = <?=json_encode($auth_user)?>;
+    auth_user.id = <?=$auth_user->getId()?>
+    <?php endif;?>
+
+    $(document).ready(function(){
 //Ajax-подгрузка комментариев при прокрутке страницы
         /* Переменная-флаг для отслеживания того, происходит ли в данный момент ajax-запрос */
         var inProgress = false;
@@ -204,26 +211,7 @@
                     if (data) {
                         $.each(data, function(index, data){
                             /* Отбираем по идентификатору блок с комментариями и дозаполняем его новыми данными */
-                            $("#comments").append(
-                                '<div class="panel panel-white post panel-shadow">'+
-                                '<div class="post-heading">'+
-                                '<div class="pull-left image">'+
-                                '<img src="http://bootdey.com/img/Content/user_1.jpg" class="img-circle avatar" alt="user profile image">'+
-                                '</div>'+
-                                '<div class="pull-left meta">'+
-                                '<div class="title h5">'+
-                                '<b>'+data.user.name+'</b> ('+
-                                data.created_at+')'+
-                                '</div></div></div>'+
-                                '<div class="post-description">'+
-                                '<p>'+data.text+'</p>'+
-                                '<div class="stats">'+
-                                '<span class="btn btn-default stat-item">'+
-                                '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
-                                '<span class="btn btn-default stat-item">'+
-                                '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
-                                '</div></div></div>'
-                            );
+                            $("#comments").append($(newCommentElement(data)));
                         });
                         /* По факту окончания запроса снова меняем значение флага на false */
                         inProgress = false;
@@ -294,26 +282,7 @@
                 var data = jQuery.parseJSON(res);
                 if (data) {
                     $.each(data, function(index, data){
-                        jQuery(el).parent().append(
-                            '<div class="panel panel-white post panel-shadow">'+
-                            '<div class="post-heading">'+
-                            '<div class="pull-left image">'+
-                            '<img src="http://bootdey.com/img/Content/user_1.jpg" class="img-circle avatar" alt="user profile image">'+
-                            '</div>'+
-                            '<div class="pull-left meta">'+
-                            '<div class="title h5">'+
-                            '<b>'+data.user.name+'</b> ('+
-                            data.created_at+')'+
-                            '</div></div></div>'+
-                            '<div class="post-description">'+
-                            '<p>'+data.text+'</p>'+
-                            '<div class="stats">'+
-                            '<span class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
-                            '<span class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
-                            '</div></div></div>'
-                        );
+                        jQuery(el).parent().append($(newCommentElement(data, true)));
                     });
                     jQuery(el).css('display', 'none');
                 }
@@ -337,7 +306,6 @@
 ///Ajax-запрос на Добавление нового ответа к комментарию
     function addAnswer(el, id) {
         var text=jQuery(el).prev('textarea').val();
-        console.log([id,text]);
         $.ajax({
             url: '/add-comment',
             type: 'POST',
@@ -345,26 +313,7 @@
             success: function (res) {
                 var data = jQuery.parseJSON(res);
                 if (data) {
-                        jQuery(el).parent().next('div').prepend(
-                            '<div class="panel panel-white post panel-shadow">'+
-                            '<div class="post-heading">'+
-                            '<div class="pull-left image">'+
-                            '<img src="http://bootdey.com/img/Content/user_1.jpg" class="img-circle avatar" alt="user profile image">'+
-                            '</div>'+
-                            '<div class="pull-left meta">'+
-                            '<div class="title h5">'+
-                            '<b>'+data.user.name+'</b> ('+
-                            data.created_at+')'+
-                            '</div></div></div>'+
-                            '<div class="post-description">'+
-                            '<p>'+data.text+'</p>'+
-                            '<div class="stats">'+
-                            '<span class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-up"></i> '+data.rating.plus.length+'</span>'+
-                            '<span class="btn btn-default stat-item">'+
-                            '<i class="glyphicon glyphicon-thumbs-down"></i> '+data.rating.minus.length +'</span>'+
-                            '</div></div></div>'
-                        );
+                        jQuery(el).parent().next('div').prepend($(newCommentElement(data,true)));
                     jQuery(el).parent().css('display', 'none');
                 }
             },
@@ -393,10 +342,108 @@
     }
 
 
-// Не успел написать код для нормального отображения подгружаемых комментариев
-    function newCommentElement() {
-        var el = document.createElement('div');
-        el.addClass('row');
+// Динамическое создание елемента комментария
+    // принимает объект комментария - comment
+    // и пометку для вложенного класса - is_answer
+    function newCommentElement(comment, is_answer) {
+
+        var main_class = 'bg-info';
+        // убрать класс 'bg-info' у вложенного комментария
+        if(is_answer == true) main_class = '';
+
+        var div = '<div class="row '+main_class+'">'+
+                '<div class="panel post">'+
+                    '<div class="post-heading">'+
+                        '<div class="pull-left image">'+
+                            '<img src="http://bootdey.com/img/Content/user_1.jpg" class="img-circle avatar" alt="user profile image">'+
+                        '</div>'+
+                        '<div class="pull-left meta">'+
+                            '<div class="title h5">'+
+                            '<b>'+comment.user.name+'</b> ('+
+                            comment.created_at+')' +
+                            '</div>'+
+                        '</div>'+
+                    '</div>'+
+                    '<div class="post-description">'+
+                        '<p>'+comment.text+'</p>';
+
+        if(auth_user != undefined && auth_user.email == comment.user.email){
+            div += '<div class="form-group" style="display:none">'+
+                '<label for="comment">Редагувати коментар:</label>'+
+                '<textarea name="text" class="form-control" rows="5" id="comment">'+comment.text+'</textarea>'+
+                '<button  class="btn btn-primary btn-block" onclick="editComment(this,'+comment.id+')">Відправити</button>'+
+                '<br>'+
+                '</div>'+
+                '<div class="stats">'+
+                '<span class="btn btn-default stat-item disabled">'+
+                '<i class="glyphicon glyphicon-thumbs-up"></i> '+comment.rating['plus'].length+
+                '</span>'+
+                '<span class="btn btn-default stat-item disabled">'+
+                '<i class="glyphicon glyphicon-thumbs-down"></i> '+comment.rating['minus'].length+
+                '</span>'+
+                '<div class="btn-group pull-right">'+
+                '<button class="btn btn-primary" onclick="showEdit(this)">Редагувати</button>'+
+                '<button class="btn btn-danger" onclick="deleteComment(this,'+comment.id+')">Видалити</button>'+
+                '</div>'+
+                '</div>';
+
+        }else {
+            var class_btn_up = ' btn-default';
+            var class_btn_down = ' btn-default';
+            if(auth_user != undefined && $.inArray(auth_user.id.toString(), comment.rating['plus']) != -1){
+                class_btn_up = ' btn-success';}
+            if(auth_user != undefined && $.inArray(auth_user.id.toString(), comment.rating['minus']) != -1){
+                class_btn_down = ' btn-danger';}
+
+            div += '<div class="stats">'+
+                '<span class="btn stat-item'+
+                class_btn_up+
+                '" onclick="clickRating(this, '+comment.id+', true)">'+
+                '<i class="glyphicon glyphicon-thumbs-up"></i> <span> '+comment.rating['plus'].length+'</span>'+
+                '</span>'+
+                '<span class="btn stat-item'+
+                class_btn_down+
+                '" onclick="clickRating(this, '+comment.id+', false)">'+
+                '<i class="glyphicon glyphicon-thumbs-down"></i> <span> '+comment.rating['minus'].length+'</span>'+
+                '</span>';
+
+            if (auth_user != undefined && is_answer != true) {
+                div += '<button class="btn btn-primary pull-right" onclick="showAddAnswer(this)">Відповісти</button>';
+            }
+
+            div += '</div>';
+        }
+
+        div += '</div> </div>';
+
+        // убрать форму ответа на комментарий и список ответов у вложенного комментария
+        if(is_answer != true) {
+            div += '<div class="form-group" style="display:none">' +
+                '<label for="comment">Відповісти на коментар:</label>' +
+                '<textarea name="text" class="form-control" rows="5" id="comment"></textarea>' +
+                '<button  class="btn btn-primary btn-block" onclick="addAnswer(this,' + comment.id + ')">Відправити</button>' +
+                '<br>' +
+                '</div>' +
+                '<div class="answers">';
+
+            if (comment.comments != undefined && comment.comments.length > 0) {
+                div += '<p>Відповіді:</p>';
+
+                // рекурсия фуекции для вложенных комментариев
+                for (var sub_comment in comment.comments) {
+                    div += newCommentElement(comment.comments[sub_comment], true);
+                }
+
+                if (comment.comments_count > 2) {
+                    div += '<button class="btn btn-primary btn-block" onclick="showAllAnswers(this,' + comment.id + ', ' + comment.comments_count + ' )">Всі відповіді</button>';
+                }
+            }
+
+            div += '</div>';
+        }
+        div += '</div>';
+
+        return div;
     }
 
 </script>
