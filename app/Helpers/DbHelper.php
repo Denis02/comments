@@ -19,8 +19,9 @@ class DbHelper
 
     public function __construct()
     {
-        //Подключение к базе данных
-        $this->db = new PDO("mysql:host=localhost;dbname=comments_db;charset=utf8", "homestead", "secret");
+        /* Подключение к БД */
+        $config = dbConfig();
+        $this->db = new PDO($config['dsn'], $config['user'], $config['pass']);
     }
 
 

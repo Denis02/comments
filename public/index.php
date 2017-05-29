@@ -8,7 +8,6 @@ define('ROOT_DIR',getcwd().'/../');
 define('RESOURCES_DIR',getcwd().'/../resources/');
 define('APP_DIR',getcwd().'/../app/');
 
-
 // Автозагрузка классов
 spl_autoload_register(function (string $class){
     $file = APP_DIR.str_replace('\\','/',$class).'.php';
@@ -25,11 +24,19 @@ function view(string $content, array $data = null, string $layout='app'){
     include_once RESOURCES_DIR.'views/layouts/'.$layout.'.php';
 }
 
+// Глобальная функция конфигураций базы данных
+function dbConfig(){
+    return [
+        'dsn' => 'mysql:host=localhost;dbname=comments_db;charset=utf8',
+        'user' => 'homestead',
+        'pass' => 'secret'
+    ];
+}
+// Запуск миграций базы данных
+include_once ROOT_DIR.'database/migrations.php';
+
 // Подключение файла маршрутизации
 require_once ROOT_DIR.'app/routes.php';
-
-// Запуск миграций базы данных
-//include_once ROOT_DIR.'database/migrations.php';
 
 
 

@@ -1,6 +1,7 @@
 <?php
 /* Подключение к БД */
-$db = new PDO("mysql:host=localhost;dbname=comments_db;charset=utf8", "homestead", "secret");
+$config = dbConfig();
+$db = new PDO($config['dsn'], $config['user'], $config['pass']);
 /* Создание таблиц, если их не существует*/
 try
 {
